@@ -8,8 +8,8 @@ on:
       - '**.md'
       - '**.txt'
       - '**.sh'
-  schedule:
-    - cron: '0 12 * * 0'
+#  schedule:
+#    - cron: '0 12 * * 0'
   push:
     branches:
       - main
@@ -20,46 +20,16 @@ on:
 
 jobs:
   test_and_build:
-    runs-on: [ self-hosted ]
-    name: Code check and no push
-    strategy:
-      matrix:
-        os: [ centos7, ubuntu1404, ubuntu1604, ubuntu1804, ubuntu2004, ubuntu2204, debian8, debian9, debian10, debian11, debian12, alpine-edge, alpine-latest ]
-        include:
-          - os: ubuntu1414
-            codename: trusty
-          - os: ubuntu1604
-            codename: xenial
-          - os: ubuntu1804
-            codename: bionic
-          - os: ubuntu2004
-            codename: focal
-          - os: ubuntu2204
-            codename: jammy
-          - os: debian8
-            codename: jessie
-          - os: debian9
-            codename: stretch
-          - os: debian10
-            codename: buster
-          - os: debian11
-            codename: bullseye
-          - os: debian12
-            codename: bookworm
+    runs-on: [ ubuntu-latest ]
+    name: Code check
     steps:
-      - uses: AutoModality/action-clean@v1
-      - name: Change ownership
-        run: |
-          sudo chown -R $(whoami):$(whoami) $GITHUB_WORKSPACE
-
       - name: Checkout the codebase
         uses: actions/checkout@v4
+      
+      - uses: hashicorp/setup-terraform@v3
 
-      - name: echo
-        if: ${{ matrix.codename !='' }}
+      - name: Code formatted
+        id: fmt
         run: |
-          echo "${{ matrix.os }}, ${{ matrix.codename }}"
-      - name: echo
-        if: ${{ matrix.codename =='' }}
-        run: |
-          echo "${{ matrix.os }}"
+          terraform fmt -check
+        continue-on-error: true
